@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <zlog.h>
 
 #include "rust_like_c.h"
 
@@ -17,6 +18,34 @@ static inline RESULT_T(int) mul(int a, int b)
 	} else {
 		return RESULT_ERR(int, NULL);
 	}
+}
+
+static int log_init()
+{
+	int rc;
+	zlog_category_t *c;
+
+	rc = zlog_init("test_hello.conf");
+
+	if (rc) {
+		printf("init failed\n");
+		return -1;
+	}
+
+	c = zlog_get_category("my_cat");
+
+	if (!c) {
+		printf("get cat fail\n");
+
+		zlog_fini();
+		return -2;
+	}
+
+	zlog_info(c, "hello, zlog");
+
+	zlog_fini();
+
+	return 0;
 }
 
 int main()
@@ -43,5 +72,7 @@ int main()
 	} else {
 		println("Ok: %d", GET_OK(&res));
 	}
+
+	log_init();
 	return 0;
 }

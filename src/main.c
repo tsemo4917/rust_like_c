@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
-#include <zlog.h>
+// #include <zlog.h>
 
 #include "rust_like_c.h"
 
@@ -9,41 +9,52 @@
 
 // #define for_each_array(_iter, _array) for_each_ptr(_iter, _array, ARRAY_SIZE(_array))
 
-DEFINE_RESULT_T(int, int, void *);
+DEFINE_RESULT_T(int, int, RESULT_VOID_T);
 
 static inline RESULT_T(int) mul(int a, int b)
 {
 	if (a < 100 && b < 100) {
 		return RESULT_OK(int, a *b);
 	} else {
-		return RESULT_ERR(int, NULL);
+		return RESULT_ERR(int, RESULT_VOID_NULL);
+	}
+}
+
+DEFINE_RESULT_T(only_err, RESULT_VOID_T, int);
+
+static inline RESULT_T(only_err) div(int a, int b)
+{
+	if (a < b) {
+		return RESULT_OK(only_err, RESULT_VOID_NULL);
+	} else {
+		return RESULT_ERR(only_err, a / b);
 	}
 }
 
 static int log_init()
 {
-	int rc;
-	zlog_category_t *c;
+	// int rc;
+	// zlog_category_t *c;
 
-	rc = zlog_init("test_hello.conf");
+	// rc = zlog_init("test_hello.conf");
 
-	if (rc) {
-		printf("init failed\n");
-		return -1;
-	}
+	// if (rc) {
+	// 	printf("init failed\n");
+	// 	return -1;
+	// }
 
-	c = zlog_get_category("my_cat");
+	// c = zlog_get_category("my_cat");
 
-	if (!c) {
-		printf("get cat fail\n");
+	// if (!c) {
+	// 	printf("get cat fail\n");
 
-		zlog_fini();
-		return -2;
-	}
+	// 	zlog_fini();
+	// 	return -2;
+	// }
 
-	zlog_info(c, "hello, zlog");
+	// zlog_info(c, "hello, zlog");
 
-	zlog_fini();
+	// zlog_fini();
 
 	return 0;
 }
@@ -63,14 +74,16 @@ int main()
 	if (IS_OK(&res)) {
 		println("OK: %d", GET_OK(&res));
 	} else {
-		println("Err: %p", GET_ERR(&res));
+		println("Err when mul");
 	}
 
-	res = mul(100, 1);
-	if (IS_ERR(&res)) {
-		println("Err: %p", GET_ERR(&res));
+	RESULT_T(only_err) err;
+
+	err = div(100, 9);
+	if (IS_ERR(&err)) {
+		println("div %d", GET_ERR(&err));
 	} else {
-		println("Ok: %d", GET_OK(&res));
+		println("Ok");
 	}
 
 	log_init();
